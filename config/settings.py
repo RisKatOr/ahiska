@@ -11,19 +11,27 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 import environ
+import os
 
+
+env = environ.Env(
+    # aksini belirtmediğiniz müddetçe başlangıç değeri False olacaktır.
+    DEBUG=(bool, False)
+)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env()
+# Varsayılan değişkenleri .env dosyasından alın
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+# Eğer SECRET_KEY .env dosyasında yoksa hata verir
+try:
+    SECRET_KEY = env('SECRET_KEY')
+except KeyError as e:
+    raise RuntimeError("SECRET_KEY .env dosyasında bulunamadı") from e
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# .env dosyasındaki DEBUG değerini alır
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = tuple(env.list('ALLOWED_HOSTS', default=[]))
@@ -125,11 +133,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-# STATIC_ROOT = BASE_DIR / 'staticfiles/'
-# STATICFILES_DIRS = [BASE_DIR / 'static']
-#
-# MEDIA_URL = '/media/'
-# MEDIA_ROOT = BASE_DIR / 'media/'
+
+# STATIC_ROOT = BASE_DIR / 'staticfiles'  # it's only required for deployment.
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = BASE_DIR / 'media/'
 # MEDIA_ROOT = BASE_DIR / 'mediafiles/' # in production mode
 
 
